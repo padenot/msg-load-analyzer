@@ -109,7 +109,8 @@ function parse(str) {
     var result = {
       time: new Int32Array(numCallbacks),
       load: new Float32Array(numCallbacks),
-      budget: new Int32Array(numCallbacks)
+      budget: new Int32Array(numCallbacks),
+      data_underrun: []
     }
 
     var phaseCallback = "B";
@@ -121,6 +122,10 @@ function parse(str) {
       if (events[i].name.indexOf("budget") != -1) {
         result.budget[metricIndex] = events[i].dur;
         result.time[metricIndex] = events[i].ts;
+      }
+      if (events[i].name.indexOf("underrun") != -1) {
+        console.log(events[i]);
+        result.data_underrun.push({ ts: events[i].ts, dropped: parseInt(events[i].comment)});
       }
       if (events[i].name.indexOf("DataCallback") != -1) {
         if (events[i].ph == phaseCallback) {
@@ -153,6 +158,12 @@ window.onload = function() {
           var load = data.load;
           var len = data.load.length;
 
+          document.body.innerHTML += `${data.data_underrun.length} data underruns<ul>`
+
+          data.data_underrun.forEach(function(e) {
+            document.body.innerHTML += `<li>${e.dropped} frames dropped at ${e.ts}`;
+          });
+          document.body.innerHTML += "</ul>";
           // Median
           var copyLoad = load.slice(0);
           copyLoad.sort((a, b) => a - b);
