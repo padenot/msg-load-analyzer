@@ -1,9 +1,12 @@
 $ = document.querySelector.bind(document);
+var root = $(".root");
+
 function plot(data) {
   return new Promise((resolve, reject) => {
     var plotRoot = document.createElement("div");
-    plotRoot.style.width = "1000px";
-    plotRoot.style.height = "1000px";
+    plotRoot.className = "load plot";
+    var plotRootHist = document.createElement("div");
+    plotRootHist.className = "hist plot";
 
     var load = {
       x: data.time,
@@ -48,6 +51,7 @@ function plot(data) {
 
     var layout = {
       title: 'Audio callback load analysis',
+      width: window.innerWidth * 0.75,
       xaxis: {
         exponentformat: "none"
       },
@@ -82,7 +86,20 @@ function plot(data) {
     };
 
     Plotly.newPlot(plotRoot, graphSeries, layout);
-    document.body.appendChild(plotRoot);
+    var trace = {
+      title: 'Historgram of callback time',
+      x: load.y,
+      histnorm: 'probability',
+      type: 'histogram',
+      autosize: true,
+    };
+    var layoutHist = {
+      width: window.innerWidth * 0.75,
+      title: 'Callback duration histogram',
+    }
+    Plotly.newPlot(plotRootHist, [trace], layoutHist);
+    root.appendChild(plotRoot);
+    root.appendChild(plotRootHist);
     resolve(data);
   });
 }
@@ -158,12 +175,14 @@ window.onload = function() {
           var load = data.load;
           var len = data.load.length;
 
-          document.body.innerHTML += `${data.data_underrun.length} data underruns<ul>`
+          if (data.data_underrun.length) {
+            root.innerHTML += `${data.data_underrun.length} data underruns<ul>`
 
-          data.data_underrun.forEach(function(e) {
-            document.body.innerHTML += `<li>${e.dropped} frames dropped at ${e.ts}`;
-          });
-          document.body.innerHTML += "</ul>";
+            data.data_underrun.forEach(function(e) {
+              root.innerHTML += `<li>${e.dropped} frames dropped at ${e.ts}`;
+            });
+            root.innerHTML += "</ul>";
+          }
           // Median
           var copyLoad = load.slice(0);
           copyLoad.sort((a, b) => a - b);
@@ -187,15 +206,16 @@ window.onload = function() {
           stddev = Math.sqrt(variance);
 
           var metricsRoot = document.createElement("div");
+          metricsRoot.className = "metrics";
           metricsRoot.innerHTML = `
-          <ul>
-          <li> Mean: ${mean}
-          <li> Median: ${median}
-          <li> Variance: ${variance}
-          <li> Standard deviation: ${stddev}
-          </ul>
+          <table>
+          <tr><td> Mean</td><td> ${mean.toPrecision(4)}</td></tr>
+          <tr><td> Median</td><td> ${median.toPrecision(4)}</td></tr>
+          <tr><td> Variance</td><td> ${variance.toPrecision(4)}</td></tr>
+          <tr><td> Standard deviation</td><td> ${stddev.toPrecision(4)}</td></tr>
+          </table>
           `;
-          document.body.appendChild(metricsRoot);
+          root.appendChild(metricsRoot);
 
           data.mean = mean;
           data.variance = variance;

@@ -3,9 +3,65 @@
 <head>
   <meta charset=utf-8>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .root {
+      display: flex;
+      align-items: center;
+      flex-direction: column;  /* make main axis vertical */
+    }
+    section {
+      display: flex;
+      align-items: left;
+      flex-direction: column;  /* make main axis vertical */
+    }
+    .plot {
+      width: 75%;
+    }
+    html {
+      font-family: sans-serif;
+    }
+    table {
+      border-top: 2px solid gray;
+      border-bottom: 2px solid gray;
+      width: 40%;
+      border-collapse: collapse;
+    }
+    .metrics {
+      width: 40%;
+      padding-top: 3em;
+      padding-bottom: 3em;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+    }
+    .metrics td:last-child {
+      text-align: right;
+    }
+    p {
+      text-align: left;
+    }
+  </style>
 </head>
 
+
+<div class=root>
+<h1>Firefox real-time callback load analysis</h1>
+<section>
+<p>
+Run Firefox with audio callback trace logging enabled:
+</p>
+<pre>
+  MOZ_DISABLE_CONTENT_SANDBOX=1 MOZ_LOG=MSGTracing:5,raw,sync MOZ_LOG_FILE=tracing.log ./mach run
+</pre>
+
+<p>
+Execute your scenario, then load the file that has a non-zero size into this
+app, called <code>tracing.log.child-X</code> where X is an integer.
+</p>
+</section>
+
 <input type=file id=data-file-input></input>
+</div>
 
 <script src="vendor/plotly-latest.min.js"></script>
 <script src="app.js"></script>
